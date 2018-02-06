@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +10,7 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Azure.AppService.Proxy.Client;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Azure.WebJobs.Script.Description;
@@ -15,10 +18,6 @@ using Microsoft.Azure.WebJobs.Script.WebHost.Features;
 using Microsoft.Azure.WebJobs.Script.WebHost.Security.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.AppService.Proxy.Common.Client;
-using System.Linq;
-using System.Reflection;
-using Microsoft.Azure.WebJobs.Script.Binding;
 
 namespace Microsoft.Azure.WebJobs.Script.WebHost.Proxy
 {
@@ -73,8 +72,6 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Proxy
             if (functionExecution != null && !context.Response.HasStarted)
             {
                 IActionResult result = await GetResultAsync(context, functionExecution);
-
-                //return ProxyLocalFunctionResultFactory.Create(result);
                 return result;
             }
 
@@ -145,6 +142,5 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Proxy
 
             return authorizeResult.Succeeded;
         }
-
     }
 }

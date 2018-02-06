@@ -8,8 +8,8 @@ using Microsoft.Azure.WebJobs.Script;
 using Microsoft.Azure.WebJobs.Script.Description;
 using Microsoft.Azure.WebJobs.Script.WebHost;
 using Microsoft.Azure.WebJobs.Script.WebHost.Features;
-using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Script.WebHost.Proxy;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.WebJobs.Extensions.Http
 {

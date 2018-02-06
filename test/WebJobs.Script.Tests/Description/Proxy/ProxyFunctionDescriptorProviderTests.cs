@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.WebJobs.Script.Tests;
 using Moq;
 using Xunit;
-using Microsoft.Azure.AppService.Proxy.Common.Client;
 
 namespace Microsoft.Azure.WebJobs.Script.Tests
 {
