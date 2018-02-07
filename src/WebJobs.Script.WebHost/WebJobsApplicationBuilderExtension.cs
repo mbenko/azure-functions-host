@@ -22,18 +22,10 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             builder.UseMiddleware<HttpExceptionMiddleware>();
             builder.UseMiddleware<ResponseBufferingMiddleware>();
             builder.UseMiddleware<FunctionInvocationMiddleware>();
-            builder.UseMiddleware<ProxyMiddleware>();
             builder.UseMiddleware<HostWarmupMiddleware>();
 
             // Ensure the HTTP binding routing is registered after all middleware
             builder.UseHttpBindingRouting(applicationLifetime, routes);
-
-            builder.UseMvc(r =>
-            {
-                r.MapRoute(name: "Home",
-                    template: string.Empty,
-                    defaults: new { controller = "Home", action = "Get" });
-            });
 
             return builder;
         }

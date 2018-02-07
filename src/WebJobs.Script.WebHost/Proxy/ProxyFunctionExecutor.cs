@@ -59,6 +59,11 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Proxy
                     {
                         functionName = rc.RouteData.DataTokens["AZUREWEBJOBS_FUNCTIONNAME"].ToString();
                     }
+
+                    if (routes != null)
+                    {
+                        routes.Reverse();
+                    }
                 }
             }
 
