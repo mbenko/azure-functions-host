@@ -28,6 +28,7 @@ using Microsoft.Azure.WebJobs.Script.Scale;
 using Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics;
 using Microsoft.Azure.WebJobs.Script.WebHost.Extensions;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Script.WebHost
 {
@@ -49,6 +50,7 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
         private bool _hostStarted = false;
         private HttpRouteCollection _httpRoutes;
         private HttpRequestManager _httpRequestManager;
+        private SystemTraceWriter _systemTraceWriter;
 
         public WebScriptHostManager(ScriptHostConfiguration config,
             ISecretManagerFactory secretManagerFactory,
@@ -70,14 +72,14 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             _hostRunningPollIntervalMilliseconds = hostPollingIntervalMilliseconds;
 
             var systemEventGenerator = config.HostConfig.GetService<IEventGenerator>() ?? new EventGenerator();
-            var systemTraceWriter = new SystemTraceWriter(systemEventGenerator, settingsManager, TraceLevel.Verbose);
+            _systemTraceWriter = new SystemTraceWriter(systemEventGenerator, settingsManager, TraceLevel.Verbose);
             if (config.TraceWriter != null)
             {
-                config.TraceWriter = new CompositeTraceWriter(new TraceWriter[] { config.TraceWriter, systemTraceWriter });
+                config.TraceWriter = new CompositeTraceWriter(new TraceWriter[] { config.TraceWriter, _systemTraceWriter });
             }
             else
             {
-                config.TraceWriter = systemTraceWriter;
+                config.TraceWriter = _systemTraceWriter;
             }
 
             config.IsSelfHost = webHostSettings.IsSelfHost;
@@ -169,7 +171,23 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
                 };
                 using (logger.BeginScope(scopeState))
                 {
+                    var stopWatch = new Stopwatch();
+                    stopWatch.Start();
                     await Instance.CallAsync(function.Name, arguments, cancellationToken);
+                    stopWatch.Stop();
+
+                    if (request.IsColdStartRequest())
+                    {
+                        var message = new JObject
+                        {
+                            { "requestId", request.GetRequestId() },
+                            { "functionDuration", stopWatch.ElapsedMilliseconds },
+                            { "language", function.Metadata.ScriptType.ToString() }
+                        };
+                        var coldStartEvent = new TraceEvent(TraceLevel.Info, message.ToString());
+                        coldStartEvent.Properties.Add(ScriptConstants.TracePropertyEventNameKey, "ColdStart");
+                        _systemTraceWriter.Trace(coldStartEvent);
+                    }
                 }
             }
 
